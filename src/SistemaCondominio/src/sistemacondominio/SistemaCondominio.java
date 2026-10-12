@@ -1,19 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package sistemacondominio;
 
-/**
- *
- * @author IVAN
- */
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +15,128 @@ import java.util.List;
 import java.util.Map;
 
 public class SistemaCondominio {
+
+    // --- PALETA DE COLORES MINIMALISTA CON ACCENTOS COLORIDOS ---
+    public static final Color COLOR_BG = new Color(248, 250, 252);           // #F8FAFC
+    public static final Color COLOR_SURFACE = new Color(255, 255, 255);       // #FFFFFF
+    public static final Color COLOR_BORDER = new Color(226, 232, 240);        // #E2E8F0
+    public static final Color COLOR_BORDER_ACTIVE = new Color(194, 203, 207);   // #4F46E5
+    
+    public static final Color COLOR_TEXT_PRIMARY = new Color(15, 23, 42);     // #0F172A
+    public static final Color COLOR_TEXT_MUTED = new Color(100, 116, 139);    // #64748B
+    
+    // Botón Primario
+    public static final Color COLOR_BTN_PRIMARY = new Color(194, 203, 207);      // #4F46E5 (Indigo Vivo)
+    public static final Color COLOR_BTN_HOVER = new Color(67, 56, 202);
+
+    // Estados de Kanban (Píldoras de Color)
+    public static final Color BG_PENDIENTE = new Color(255, 251, 235);        // Ámbar suave
+    public static final Color FG_PENDIENTE = new Color(180, 83, 9);
+    
+    public static final Color BG_EN_CURSO = new Color(239, 246, 255);         // Azul cielo suave
+    public static final Color FG_EN_CURSO = new Color(29, 78, 216);
+    
+    public static final Color BG_COMPLETADO = new Color(236, 253, 245);       // Verde menta
+    public static final Color FG_COMPLETADO = new Color(4, 120, 87);
+
+    public static final Font FONT_REGULAR = new Font("Segoe UI", Font.PLAIN, 12);
+    public static final Font FONT_MEDIUM = new Font("Segoe UI", Font.BOLD, 12);
+    public static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 14);
+
+    // --- COMPONENTES UI CON ESTILO ---
+
+    /** Botón Moderno con soporte de colores personalizados */
+    public static class BotonMinimalista extends JButton {
+        private Color bgNormal = COLOR_SURFACE;
+        private Color bgHover = new Color(238, 242, 255);
+        private Color colorTexto = COLOR_TEXT_PRIMARY;
+        private Color colorBorde = COLOR_BORDER;
+        private boolean hover = false;
+        private int radio = 8;
+
+        public BotonMinimalista(String texto) {
+            super(texto);
+            init();
+        }
+
+        public BotonMinimalista(String texto, Color bgNormal, Color bgHover, Color colorTexto) {
+            super(texto);
+            this.bgNormal = bgNormal;
+            this.bgHover = bgHover;
+            this.colorTexto = colorTexto;
+            this.colorBorde = bgNormal;
+            init();
+        }
+
+        private void init() {
+            setContentAreaFilled(false);
+            setFocusPainted(false);
+            setBorderPainted(false);
+            setForeground(colorTexto);
+            setFont(FONT_REGULAR);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+            setMargin(new Insets(6, 12, 6, 12));
+
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) { hover = true; repaint(); }
+                @Override
+                public void mouseExited(MouseEvent e) { hover = false; repaint(); }
+            });
+        }
+
+        public void setRadio(int radio) { this.radio = radio; repaint(); }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2.setColor(hover ? bgHover : bgNormal);
+            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, radio, radio));
+
+            if (colorBorde != null) {
+                g2.setColor(colorBorde);
+                g2.draw(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, radio, radio));
+            }
+
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    /** Contenedor Redondeado Limpio */
+    public static class PanelMinimalista extends JPanel {
+        private int radio = 10;
+        private Color fondo = COLOR_SURFACE;
+        private Color borde = COLOR_BORDER;
+
+        public PanelMinimalista(int radio, Color fondo, Color borde) {
+            this.radio = radio;
+            this.fondo = fondo;
+            this.borde = borde;
+            setOpaque(false);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            if (fondo != null) {
+                g2.setColor(fondo);
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, radio, radio));
+            }
+
+            if (borde != null) {
+                g2.setColor(borde);
+                g2.draw(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, radio, radio));
+            }
+
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
 
     // --- 1. MODELO Y PATRÓN OBSERVER ---
     public enum Estado { PENDIENTE, EN_CURSO, COMPLETADO, FALLIDO }
@@ -48,7 +163,7 @@ public class SistemaCondominio {
         protected String problema;
         protected String descripcion;
         protected Estado estado;
-        protected boolean resolucionEnMarcha; // Evita duplicar el proceso de tiempo
+        protected boolean resolucionEnMarcha;
 
         public Incidencia(String nombre, String tipoResidente, String departamento, String problema, String descripcion) {
             this.nombreResidente = nombre;
@@ -169,28 +284,19 @@ public class SistemaCondominio {
         public List<Incidencia> getIncidencias() { return listaIncidencias; }
     }
 
-    // --- 3. COMPONENTE VISUAL: PANEL CON IMAGEN ---
+    // --- 3. COMPONENTE VISUAL DE FONDO NEUTRO ---
     static class PanelFondo extends JPanel {
-        private Image imagenFondo;
         public PanelFondo(String rutaImagen) {
-            File f = new File(rutaImagen);
-            if (f.exists()) imagenFondo = new ImageIcon(rutaImagen).getImage();
-        }
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            if (imagenFondo != null) {
-                g.drawImage(imagenFondo, 0, 0, getWidth(), getHeight(), this);
-            } else {
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setPaint(new GradientPaint(0, 0, new Color(70, 130, 180), getWidth(), getHeight(), new Color(25, 25, 112)));
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-            }
+            setBackground(COLOR_BG);
         }
     }
 
     // --- 4. VISTAS (INTERFAZ GRÁFICA) ---
     public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignored) {}
+
         SwingUtilities.invokeLater(() -> {
             ControladorSistema controlador = new ControladorSistema();
             new VentanaLoginAdmin(controlador).setVisible(true);
@@ -200,24 +306,47 @@ public class SistemaCondominio {
 
     static class VentanaLoginAdmin extends JFrame {
         public VentanaLoginAdmin(ControladorSistema ctrl) {
-            setTitle("Login - Administrador");
-            setSize(350, 220);
+            setTitle("Login");
+            setSize(360, 290);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            setLayout(new GridLayout(4, 1, 5, 5));
-            setLocation(450, 200);
+            setLocationRelativeTo(null);
+            getContentPane().setBackground(COLOR_BG);
+            setLayout(new BorderLayout());
 
-            JPanel panelInputs = new JPanel(new GridLayout(2, 2, 5, 5));
-            panelInputs.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
-            panelInputs.add(new JLabel("Usuario:"));
+            PanelMinimalista cardPanel = new PanelMinimalista(12, COLOR_SURFACE, COLOR_BORDER);
+            cardPanel.setLayout(new BoxLayout(cardPanel, BoxLayout.Y_AXIS));
+            cardPanel.setBorder(new EmptyBorder(24, 24, 24, 24));
+
+            JLabel lblTitulo = new JLabel("Administración");
+            lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+            lblTitulo.setFont(FONT_TITLE);
+            lblTitulo.setForeground(COLOR_TEXT_PRIMARY);
+
             JTextField txtUser = new JTextField();
-            panelInputs.add(txtUser);
-            panelInputs.add(new JLabel("Contraseña:"));
             JPasswordField txtPass = new JPasswordField();
-            panelInputs.add(txtPass);
+            txtUser.setFont(FONT_REGULAR);
+            txtPass.setFont(FONT_REGULAR);
 
-            JButton btnIngresar = new JButton("Ingresar");
-            JButton btnCrear = new JButton("Crear Usuario");
-            JButton btnRecuperar = new JButton("Recuperar Credenciales");
+            JPanel form = new JPanel(new GridLayout(2, 2, 8, 12));
+            form.setOpaque(false);
+            form.setBorder(new EmptyBorder(16, 0, 16, 0));
+            
+            JLabel lblUser = new JLabel("Usuario");
+            lblUser.setFont(FONT_REGULAR);
+            lblUser.setForeground(COLOR_TEXT_MUTED);
+            
+            JLabel lblPass = new JLabel("Contraseña");
+            lblPass.setFont(FONT_REGULAR);
+            lblPass.setForeground(COLOR_TEXT_MUTED);
+
+            form.add(lblUser); form.add(txtUser);
+            form.add(lblPass); form.add(txtPass);
+
+            BotonMinimalista btnIngresar = new BotonMinimalista("Ingresar", COLOR_BTN_PRIMARY, COLOR_BTN_HOVER, Color.WHITE);
+            BotonMinimalista btnCrear = new BotonMinimalista("Crear cuenta");
+            BotonMinimalista btnRecuperar = new BotonMinimalista("Recuperar");
+
+            btnIngresar.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             btnIngresar.addActionListener(e -> {
                 if (ctrl.validarAccesoAdmin(txtUser.getText(), new String(txtPass.getPassword()))) {
@@ -230,8 +359,8 @@ public class SistemaCondominio {
 
             btnCrear.addActionListener(e -> {
                 JTextField nUser = new JTextField(); JTextField nPass = new JTextField(); JTextField nDni = new JTextField();
-                Object[] campos = {"Nuevo Usuario (Solo letras):", nUser, "Contraseña (Letras y números):", nPass, "DNI (8 dígitos):", nDni};
-                if (JOptionPane.showConfirmDialog(this, campos, "Crear Nuevo Administrador", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+                Object[] campos = {"Nuevo Usuario:", nUser, "Contraseña:", nPass, "DNI (8 dígitos):", nDni};
+                if (JOptionPane.showConfirmDialog(this, campos, "Crear Administrador", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
                     try {
                         ctrl.crearUsuarioAdmin(nUser.getText(), nPass.getText(), nDni.getText());
                         JOptionPane.showMessageDialog(this, "Usuario creado exitosamente.");
@@ -242,46 +371,83 @@ public class SistemaCondominio {
             });
 
             btnRecuperar.addActionListener(e -> {
-                String dniStr = JOptionPane.showInputDialog(this, "Ingrese su número de DNI de 8 dígitos:");
+                String dniStr = JOptionPane.showInputDialog(this, "Ingrese DNI:");
                 if (dniStr != null) {
                     UsuarioAdmin rec = ctrl.recuperarCredenciales(dniStr);
                     if (rec != null) JOptionPane.showMessageDialog(this, "Usuario: " + rec.getUsuario() + "\nContraseña: " + rec.getPassword(), "Recuperado", JOptionPane.INFORMATION_MESSAGE);
-                    else JOptionPane.showMessageDialog(this, "No se encontró usuario con ese DNI.", "Error", JOptionPane.ERROR_MESSAGE);
+                    else JOptionPane.showMessageDialog(this, "No se encontró el DNI.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             });
 
-            JPanel pnlIngreso = new JPanel(new FlowLayout()); pnlIngreso.add(btnIngresar);
-            JPanel pnlOpciones = new JPanel(new FlowLayout()); pnlOpciones.add(btnCrear); pnlOpciones.add(btnRecuperar);
+            JPanel pnlSubOpciones = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 0));
+            pnlSubOpciones.setOpaque(false);
+            pnlSubOpciones.add(btnCrear);
+            pnlSubOpciones.add(btnRecuperar);
 
-            add(new JLabel("ACCESO AL CENTRO DE GESTIÓN KANBAN", SwingConstants.CENTER));
-            add(panelInputs); add(pnlIngreso); add(pnlOpciones);
+            cardPanel.add(lblTitulo);
+            cardPanel.add(form);
+            cardPanel.add(btnIngresar);
+            cardPanel.add(Box.createVerticalStrut(12));
+            cardPanel.add(pnlSubOpciones);
+
+            JPanel root = new JPanel(new BorderLayout());
+            root.setOpaque(false);
+            root.setBorder(new EmptyBorder(16, 16, 16, 16));
+            root.add(cardPanel, BorderLayout.CENTER);
+
+            add(root);
         }
     }
 
     static class AppLoginResidente extends JFrame {
         public AppLoginResidente(ControladorSistema ctrl) {
             setTitle("App Residente");
-            setSize(380, 640);
+            setSize(360, 600);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            setLayout(new GridBagLayout());
             setLocation(50, 50); 
+            getContentPane().setBackground(COLOR_BG);
+
+            PanelMinimalista container = new PanelMinimalista(12, COLOR_SURFACE, COLOR_BORDER);
+            container.setLayout(new GridBagLayout());
+            container.setBorder(new EmptyBorder(24, 24, 24, 24));
 
             GridBagConstraints gbc = new GridBagConstraints();
-            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.insets = new Insets(6, 6, 6, 6);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.gridx = 0; gbc.gridy = 0;
 
-            JLabel lblTitulo = new JLabel("Ingreso al Condominio", SwingConstants.CENTER);
-            lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
-            add(lblTitulo, gbc);
+            JLabel lblTitulo = new JLabel("Acceso Residente", SwingConstants.CENTER);
+            lblTitulo.setFont(FONT_TITLE);
+            lblTitulo.setForeground(COLOR_TEXT_PRIMARY);
+            container.add(lblTitulo, gbc);
 
-            gbc.gridy++; add(new JLabel("Ingrese su nombre y apellido:"), gbc);
-            gbc.gridy++; JTextField txtNombre = new JTextField(20); add(txtNombre, gbc);
-            gbc.gridy++; JButton btnInquilino = new JButton("Soy Inquilino"); add(btnInquilino, gbc);
-            gbc.gridy++; JButton btnPropietario = new JButton("Soy Propietario"); add(btnPropietario, gbc);
+            gbc.gridy++; 
+            JLabel lblSub = new JLabel("Nombre y Apellido", SwingConstants.LEFT);
+            lblSub.setFont(FONT_REGULAR);
+            lblSub.setForeground(COLOR_TEXT_MUTED);
+            container.add(lblSub, gbc);
+
+            gbc.gridy++; 
+            JTextField txtNombre = new JTextField(20);
+            txtNombre.setFont(FONT_REGULAR);
+            container.add(txtNombre, gbc);
+
+            gbc.gridy++; 
+            BotonMinimalista btnInquilino = new BotonMinimalista("Soy Inquilino", COLOR_BTN_PRIMARY, COLOR_BTN_HOVER, Color.WHITE); 
+            container.add(btnInquilino, gbc);
+
+            gbc.gridy++; 
+            BotonMinimalista btnPropietario = new BotonMinimalista("Soy Propietario"); 
+            container.add(btnPropietario, gbc);
 
             btnInquilino.addActionListener(e -> ingresar(ctrl, txtNombre.getText(), "Inquilino"));
             btnPropietario.addActionListener(e -> ingresar(ctrl, txtNombre.getText(), "Propietario"));
+
+            JPanel root = new JPanel(new BorderLayout());
+            root.setBorder(new EmptyBorder(16, 16, 16, 16));
+            root.setOpaque(false);
+            root.add(container, BorderLayout.CENTER);
+            add(root);
         }
 
         private void ingresar(ControladorSistema ctrl, String nombre, String tipo) {
@@ -309,35 +475,43 @@ public class SistemaCondominio {
         };
 
         public AppReporteResidente(ControladorSistema ctrl, String nombre, String tipo, AppLoginResidente ventanaLogin) {
-            setTitle("Reporte - " + tipo);
-            setSize(380, 640); 
+            setTitle("Reporte");
+            setSize(360, 600); 
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setLocation(50, 50);
+            getContentPane().setBackground(COLOR_BG);
 
-            JPanel panelPrincipal = new JPanel(new GridLayout(10, 1, 5, 5));
-            panelPrincipal.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-            panelPrincipal.add(new JLabel("Usuario: " + nombre + " (" + tipo + ")"));
-            
-            JPanel panelDpto = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            panelDpto.add(new JLabel("Piso:"));
+            JPanel panelPrincipal = new JPanel();
+            panelPrincipal.setLayout(new BoxLayout(panelPrincipal, BoxLayout.Y_AXIS));
+            panelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+            panelPrincipal.setBackground(COLOR_SURFACE);
+
+            JLabel lblUser = new JLabel(nombre + " • " + tipo);
+            lblUser.setFont(FONT_MEDIUM);
+            lblUser.setForeground(COLOR_BTN_PRIMARY);
+
+            JPanel panelDpto = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 4));
+            panelDpto.setOpaque(false);
+            JLabel lblPiso = new JLabel("Piso:"); lblPiso.setFont(FONT_REGULAR);
+            panelDpto.add(lblPiso);
             JComboBox<String> cbxPiso = new JComboBox<>(new String[]{"1","2","3","4","5","6","7","8","9"});
             panelDpto.add(cbxPiso);
-            panelDpto.add(new JLabel(" Dpto:"));
+            JLabel lblPuerta = new JLabel(" Dpto:"); lblPuerta.setFont(FONT_REGULAR);
+            panelDpto.add(lblPuerta);
             JComboBox<String> cbxPuerta = new JComboBox<>(new String[]{"01","02"});
             panelDpto.add(cbxPuerta);
-            panelPrincipal.add(panelDpto);
 
-            panelPrincipal.add(new JLabel("Seleccione el Tipo de Incidencia:"));
             JComboBox<String> cbxIncidencia = new JComboBox<>(incidenciasComunes);
-            panelPrincipal.add(cbxIncidencia);
-
-            panelPrincipal.add(new JLabel("Descripción detallada:"));
             JTextField txtDesc = new JTextField();
-            panelPrincipal.add(txtDesc);
+            txtDesc.setFont(FONT_REGULAR);
 
-            JButton btnEnviar = new JButton("Reportar Incidencia");
-            JButton btnLimpiar = new JButton("Limpiar Campos");
-            JButton btnVolver = new JButton("Volver al Login");
+            BotonMinimalista btnEnviar = new BotonMinimalista("Enviar Reporte", COLOR_BTN_PRIMARY, COLOR_BTN_HOVER, Color.WHITE);
+            BotonMinimalista btnLimpiar = new BotonMinimalista("Limpiar");
+            BotonMinimalista btnVolver = new BotonMinimalista("Cerrar Sesión");
+
+            btnEnviar.setAlignmentX(Component.CENTER_ALIGNMENT);
+            btnLimpiar.setAlignmentX(Component.CENTER_ALIGNMENT);
+            btnVolver.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             btnEnviar.addActionListener(e -> {
                 ctrl.registrarIncidencia(nombre, tipo, cbxPiso.getSelectedItem().toString(), 
@@ -353,7 +527,27 @@ public class SistemaCondominio {
 
             btnVolver.addActionListener(e -> { ventanaLogin.setVisible(true); this.dispose(); });
 
-            panelPrincipal.add(btnEnviar); panelPrincipal.add(btnLimpiar); panelPrincipal.add(btnVolver);
+            panelPrincipal.add(lblUser);
+            panelPrincipal.add(Box.createVerticalStrut(12));
+            panelPrincipal.add(panelDpto);
+            panelPrincipal.add(Box.createVerticalStrut(12));
+            
+            JLabel lblTipo = new JLabel("Tipo de Incidencia"); lblTipo.setFont(FONT_REGULAR);
+            panelPrincipal.add(lblTipo);
+            panelPrincipal.add(cbxIncidencia);
+            panelPrincipal.add(Box.createVerticalStrut(12));
+            
+            JLabel lblDesc = new JLabel("Descripción"); lblDesc.setFont(FONT_REGULAR);
+            panelPrincipal.add(lblDesc);
+            panelPrincipal.add(txtDesc);
+            panelPrincipal.add(Box.createVerticalStrut(24));
+            
+            panelPrincipal.add(btnEnviar);
+            panelPrincipal.add(Box.createVerticalStrut(6));
+            panelPrincipal.add(btnLimpiar);
+            panelPrincipal.add(Box.createVerticalStrut(6));
+            panelPrincipal.add(btnVolver);
+
             JScrollPane scrollResidente = new JScrollPane(panelPrincipal);
             scrollResidente.setBorder(null);
             add(scrollResidente);
@@ -380,25 +574,25 @@ public class SistemaCondominio {
             this.controlador = ctrl;
             this.controlador.agregarObservador(this); 
 
-            setTitle("Tablero de Gestión de Incidencias");
-            setSize(1100, 750);
+            setTitle("Dashboard - Gestión de Condominio");
+            setSize(1150, 750);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setLocationRelativeTo(null);
 
             PanelFondo fondoTablero = new PanelFondo("ui.jpeg");
             fondoTablero.setLayout(new BorderLayout());
 
-            JPanel panelTitulos = new JPanel(new GridLayout(1, 3, 15, 0));
+            JPanel panelTitulos = new JPanel(new GridLayout(1, 3, 16, 0));
             panelTitulos.setOpaque(false);
-            panelTitulos.setBorder(new EmptyBorder(10, 15, 5, 15));
-            panelTitulos.add(crearEtiquetaTitulo("Pendiente"));
-            panelTitulos.add(crearEtiquetaTitulo("En Curso"));
-            panelTitulos.add(crearEtiquetaTitulo("Completado"));
+            panelTitulos.setBorder(new EmptyBorder(16, 16, 8, 16));
+            panelTitulos.add(crearHeaderColumna("Pendientes", BG_PENDIENTE, FG_PENDIENTE));
+            panelTitulos.add(crearHeaderColumna("En curso", BG_EN_CURSO, FG_EN_CURSO));
+            panelTitulos.add(crearHeaderColumna("Completados", BG_COMPLETADO, FG_COMPLETADO));
             fondoTablero.add(panelTitulos, BorderLayout.NORTH);
 
-            JPanel panelColumnas = new JPanel(new GridLayout(1, 3, 15, 0));
+            JPanel panelColumnas = new JPanel(new GridLayout(1, 3, 16, 0));
             panelColumnas.setOpaque(false);
-            panelColumnas.setBorder(new EmptyBorder(0, 15, 10, 15));
+            panelColumnas.setBorder(new EmptyBorder(0, 16, 12, 16));
 
             panelPendiente = crearColumnaListado();
             panelEnCurso = crearColumnaListado();
@@ -410,27 +604,33 @@ public class SistemaCondominio {
             fondoTablero.add(panelColumnas, BorderLayout.CENTER);
 
             JPanel panelInferior = new JPanel(new BorderLayout());
+            panelInferior.setBackground(COLOR_BG);
             
-            consola = new JTextArea(8, 0);
+            consola = new JTextArea(6, 0);
             consola.setEditable(false);
-            consola.setFont(new Font("Monospaced", Font.PLAIN, 12));
-            consola.setBackground(new Color(20, 20, 20));
-            consola.setForeground(new Color(0, 255, 0));
+            consola.setFont(new Font("Consolas", Font.PLAIN, 11));
+            consola.setBackground(new Color(15, 23, 42));
+            consola.setForeground(new Color(52, 211, 153)); // Verde menta para logs
+            consola.setCaretColor(Color.WHITE);
             consola.setText("> Sistema Kanban Iniciado.\n> Seleccione una tarjeta para gestionar...\n");
             
-            JPanel panelBotonesAcciones = new JPanel(new GridLayout(0, 4, 5, 5));
-            panelBotonesAcciones.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            JPanel panelBotonesAcciones = new JPanel(new GridLayout(0, 4, 6, 6));
+            panelBotonesAcciones.setOpaque(false);
+            panelBotonesAcciones.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
             
             for (String accion : accionesPosibles) {
-                JButton btn = new JButton(accion);
-                btn.setFont(new Font("Arial", Font.PLAIN, 11));
+                BotonMinimalista btn = new BotonMinimalista(accion);
+                btn.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+                btn.setRadio(6);
                 btn.addActionListener(e -> ejecutarAccionBoton(accion));
                 panelBotonesAcciones.add(btn);
             }
 
-            JPanel panelControlesExtra = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            JButton btnLimpiar = new JButton("Eliminar Tarjeta");
-            JButton btnCerrar = new JButton("Cerrar Sesión");
+            JPanel panelControlesExtra = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
+            panelControlesExtra.setOpaque(false);
+
+            BotonMinimalista btnLimpiar = new BotonMinimalista("Eliminar", COLOR_SURFACE, new Color(254, 226, 226), new Color(220, 38, 38));
+            BotonMinimalista btnCerrar = new BotonMinimalista("Cerrar Sesión");
             
             btnLimpiar.addActionListener(e -> {
                 if (incidenciaSeleccionada != null) {
@@ -444,23 +644,31 @@ public class SistemaCondominio {
             panelControlesExtra.add(btnLimpiar); panelControlesExtra.add(btnCerrar);
 
             JPanel panelSurBotones = new JPanel(new BorderLayout());
+            panelSurBotones.setOpaque(false);
             panelSurBotones.add(panelBotonesAcciones, BorderLayout.CENTER);
             panelSurBotones.add(panelControlesExtra, BorderLayout.SOUTH);
 
-            panelInferior.add(new JScrollPane(consola), BorderLayout.CENTER);
+            JScrollPane scrollConsola = new JScrollPane(consola);
+            scrollConsola.setBorder(BorderFactory.createLineBorder(COLOR_BORDER));
+
+            panelInferior.add(scrollConsola, BorderLayout.CENTER);
             panelInferior.add(panelSurBotones, BorderLayout.SOUTH);
 
             JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, fondoTablero, panelInferior);
             splitPane.setDividerLocation(450); 
+            splitPane.setBorder(null);
             add(splitPane);
             cargarTarjetas();
         }
 
-        private JLabel crearEtiquetaTitulo(String texto) {
+        private JPanel crearHeaderColumna(String texto, Color bg, Color fg) {
+            PanelMinimalista panel = new PanelMinimalista(8, bg, null);
+            panel.setLayout(new FlowLayout(FlowLayout.LEFT, 12, 6));
             JLabel lbl = new JLabel(texto);
-            lbl.setFont(new Font("SansSerif", Font.BOLD, 16));
-            lbl.setForeground(Color.WHITE); 
-            return lbl;
+            lbl.setFont(FONT_MEDIUM);
+            lbl.setForeground(fg); 
+            panel.add(lbl);
+            return panel;
         }
 
         private JPanel crearColumnaListado() {
@@ -478,13 +686,17 @@ public class SistemaCondominio {
         }
 
         private Border obtenerBordeNormal() {
-            return BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0),
-                BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true), BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+            return BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(0, 0, 8, 0),
+                BorderFactory.createLineBorder(COLOR_BORDER, 1, true)
+            );
         }
 
         private Border obtenerBordeResaltado() {
-            return BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0),
-                BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.BLUE, 2, true), BorderFactory.createEmptyBorder(9, 9, 9, 9)));
+            return BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(0, 0, 8, 0),
+                BorderFactory.createLineBorder(COLOR_BORDER_ACTIVE, 2, true)
+            );
         }
 
         private void cargarTarjetas() {
@@ -503,20 +715,32 @@ public class SistemaCondominio {
         }
 
         private JPanel crearTarjetaVisual(Incidencia inc) {
-            JPanel card = new JPanel(new BorderLayout(5, 5));
-            card.setBackground(Color.WHITE); card.setMaximumSize(new Dimension(350, 100));
-            card.setBorder(obtenerBordeNormal());
+            PanelMinimalista card = new PanelMinimalista(8, COLOR_SURFACE, null);
+            card.setLayout(new BorderLayout(6, 6));
+            card.setMaximumSize(new Dimension(350, 90));
+            card.setBorder(BorderFactory.createCompoundBorder(obtenerBordeNormal(), new EmptyBorder(10, 12, 10, 12)));
+            card.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            JLabel lblTag = new JLabel(" Dpto: " + inc.getDepartamento() + " ");
-            lblTag.setOpaque(true); lblTag.setBackground(new Color(30, 144, 255));
-            lblTag.setForeground(Color.WHITE); lblTag.setFont(new Font("SansSerif", Font.BOLD, 10));
+            // Badge de Departamento con acento en Indigo
+            JLabel lblTag = new JLabel("Dpto " + inc.getDepartamento());
+            lblTag.setFont(new Font("Segoe UI", Font.BOLD, 10));
+            lblTag.setForeground(new Color(67, 56, 202));
+            lblTag.setBackground(new Color(238, 242, 255));
+            lblTag.setOpaque(true);
+            lblTag.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
 
-            JTextArea txtProblema = new JTextArea("○ " + inc.getProblema());
+            JTextArea txtProblema = new JTextArea(inc.getProblema());
             txtProblema.setWrapStyleWord(true); txtProblema.setLineWrap(true);
             txtProblema.setEditable(false); txtProblema.setOpaque(false);
-            txtProblema.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            txtProblema.setFont(FONT_REGULAR);
+            txtProblema.setForeground(COLOR_TEXT_PRIMARY);
 
-            card.add(lblTag, BorderLayout.NORTH); card.add(txtProblema, BorderLayout.CENTER);
+            JPanel pnlTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            pnlTop.setOpaque(false);
+            pnlTop.add(lblTag);
+
+            card.add(pnlTop, BorderLayout.NORTH); 
+            card.add(txtProblema, BorderLayout.CENTER);
 
             card.addMouseListener(new MouseAdapter() {
                 @Override
@@ -564,10 +788,9 @@ public class SistemaCondominio {
             }
         }
 
-        // --- SISTEMA DE TIEMPO REAL CON SWINGWORKER ---
         private void iniciarSimulacionTiempoReal(Incidencia inc, String accion) {
             inc.setEstado(Estado.EN_CURSO);
-            inc.setResolucionEnMarcha(true); // Bloquea múltiples clics en la misma tarjeta
+            inc.setResolucionEnMarcha(true);
             controlador.actualizarVista();
             consola.append("\n> Acción válida: [" + accion + "]. Iniciando protocolo en tiempo real...\n");
 
@@ -575,9 +798,8 @@ public class SistemaCondominio {
             String[] mensajesSimulados;
             String problema = inc.getProblema();
 
-            // Lógica de Tiempos basada en la complejidad
             if (problema.contains("Focos") || problema.contains("Basura") || problema.contains("Mascotas") || problema.contains("Ruidos")) {
-                tiempoTotalSegundos = 40; // Casos Leves
+                tiempoTotalSegundos = 40;
                 mensajesSimulados = new String[]{
                     "Contactando al personal asignado...", 
                     "Personal dirigiéndose a la ubicación (Dpto " + inc.getDepartamento() + ")...", 
@@ -585,7 +807,7 @@ public class SistemaCondominio {
                     "Verificando la limpieza/resolución en el área..."
                 };
             } else if (problema.contains("Ascensor") || problema.contains("Robo") || problema.contains("Incendio") || problema.contains("gas") || problema.contains("médica") || problema.contains("Corte") || problema.contains("sismo")) {
-                tiempoTotalSegundos = 80; // Casos Críticos / Emergencias
+                tiempoTotalSegundos = 80;
                 mensajesSimulados = new String[]{
                     "¡ALERTA! Iniciando protocolo de alta prioridad...", 
                     "Contactando a entidades externas de emergencia...", 
@@ -595,7 +817,7 @@ public class SistemaCondominio {
                     "Emergencia controlada. Elaborando reporte final de daños..."
                 };
             } else {
-                tiempoTotalSegundos = 60; // Casos Medios
+                tiempoTotalSegundos = 60;
                 mensajesSimulados = new String[]{
                     "Evaluando la situación reportada...", 
                     "Derivando al especialista / equipo de mantenimiento...", 
@@ -605,7 +827,6 @@ public class SistemaCondominio {
                 };
             }
 
-            // Calculamos cada cuántos milisegundos se publicará un mensaje
             int intervaloMs = (tiempoTotalSegundos * 1000) / (mensajesSimulados.length + 1);
 
             SwingWorker<Void, String> worker = new SwingWorker<Void, String>() {
@@ -615,7 +836,7 @@ public class SistemaCondominio {
                         Thread.sleep(intervaloMs);
                         publish("> [TIEMPO REAL] " + msg);
                     }
-                    Thread.sleep(intervaloMs); // Última espera antes de completar
+                    Thread.sleep(intervaloMs);
                     return null;
                 }
 
@@ -623,7 +844,7 @@ public class SistemaCondominio {
                 protected void process(List<String> chunks) {
                     for (String texto : chunks) {
                         consola.append(texto + "\n");
-                        consola.setCaretPosition(consola.getDocument().getLength()); // Auto-scroll hacia abajo
+                        consola.setCaretPosition(consola.getDocument().getLength());
                     }
                 }
 
@@ -638,6 +859,7 @@ public class SistemaCondominio {
             };
             worker.execute();
         }
+
         @Override
         public void onIncidenciaActualizada() {
             cargarTarjetas();
