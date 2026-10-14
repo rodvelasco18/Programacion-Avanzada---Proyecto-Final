@@ -7,7 +7,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,47 +15,51 @@ import java.util.Map;
 
 public class SistemaCondominio {
 
-    // --- PALETA DE COLORES MINIMALISTA CON ACCENTOS COLORIDOS ---
-    public static final Color COLOR_BG = new Color(248, 250, 252);           // #F8FAFC
+    // --- PALETA DE COLORES NATURAL, MATE Y ELEGANTE (ESTILO macOS NATIVO) ---
+    public static final Color COLOR_BG = new Color(240, 240, 242);           // #F0F0F2 (Gris neutro sobrio)
     public static final Color COLOR_SURFACE = new Color(255, 255, 255);       // #FFFFFF
-    public static final Color COLOR_BORDER = new Color(226, 232, 240);        // #E2E8F0
-    public static final Color COLOR_BORDER_ACTIVE = new Color(194, 203, 207);   // #4F46E5
+    public static final Color COLOR_BORDER = new Color(218, 218, 222);        // #DADADE (Líneas sutiles)
+    public static final Color COLOR_BORDER_ACTIVE = new Color(120, 120, 128);  // #787880 (Borde de selección discreto)
     
-    public static final Color COLOR_TEXT_PRIMARY = new Color(15, 23, 42);     // #0F172A
-    public static final Color COLOR_TEXT_MUTED = new Color(100, 116, 139);    // #64748B
+    public static final Color COLOR_TEXT_PRIMARY = new Color(38, 38, 40);     // #262628 (Grafito oscuro, no negro puro)
+    public static final Color COLOR_TEXT_MUTED = new Color(115, 115, 122);    // #73737A (Gris mate)
     
-    // Botón Primario
-    public static final Color COLOR_BTN_PRIMARY = new Color(194, 203, 207);      // #4F46E5 (Indigo Vivo)
-    public static final Color COLOR_BTN_HOVER = new Color(67, 56, 202);
+    // Botón Primario (Grafito Elegante)
+    public static final Color COLOR_BTN_PRIMARY = new Color(44, 44, 46);      // #2C2C2E
+    public static final Color COLOR_BTN_HOVER = new Color(68, 68, 70);        // Hover sutil
+    
+    // Botones Secundarios
+    public static final Color COLOR_BTN_SECONDARY_BG = new Color(229, 229, 234);
+    public static final Color COLOR_BTN_SECONDARY_HOVER = new Color(216, 216, 220);
 
-    // Estados de Kanban (Píldoras de Color)
-    public static final Color BG_PENDIENTE = new Color(255, 251, 235);        // Ámbar suave
-    public static final Color FG_PENDIENTE = new Color(180, 83, 9);
+    // Estados Kanban (Tonos desaturados / Orgánicos)
+    public static final Color BG_PENDIENTE = new Color(247, 243, 233);        // Crema mate suave
+    public static final Color FG_PENDIENTE = new Color(138, 115, 82);
     
-    public static final Color BG_EN_CURSO = new Color(239, 246, 255);         // Azul cielo suave
-    public static final Color FG_EN_CURSO = new Color(29, 78, 216);
+    public static final Color BG_EN_CURSO = new Color(235, 240, 245);         // Azul pizarra tenue
+    public static final Color FG_EN_CURSO = new Color(74, 107, 130);
     
-    public static final Color BG_COMPLETADO = new Color(236, 253, 245);       // Verde menta
-    public static final Color FG_COMPLETADO = new Color(4, 120, 87);
+    public static final Color BG_COMPLETADO = new Color(238, 243, 237);       // Verde salvia apagado
+    public static final Color FG_COMPLETADO = new Color(75, 115, 82);
 
+    // Tipografía
     public static final Font FONT_REGULAR = new Font("Segoe UI", Font.PLAIN, 12);
     public static final Font FONT_MEDIUM = new Font("Segoe UI", Font.BOLD, 12);
     public static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 14);
 
-    // --- COMPONENTES UI CON ESTILO ---
+    // --- COMPONENTES UI REFINADOS ---
 
-    /** Botón Moderno con soporte de colores personalizados */
+    /** Botón Sobrio y Limpio */
     public static class BotonMinimalista extends JButton {
-        private Color bgNormal = COLOR_SURFACE;
-        private Color bgHover = new Color(238, 242, 255);
-        private Color colorTexto = COLOR_TEXT_PRIMARY;
-        private Color colorBorde = COLOR_BORDER;
+        private Color bgNormal;
+        private Color bgHover;
+        private Color colorTexto;
+        private Color colorBorde;
         private boolean hover = false;
-        private int radio = 8;
+        private int radio = 6;
 
         public BotonMinimalista(String texto) {
-            super(texto);
-            init();
+            this(texto, COLOR_BTN_SECONDARY_BG, COLOR_BTN_SECONDARY_HOVER, COLOR_TEXT_PRIMARY);
         }
 
         public BotonMinimalista(String texto, Color bgNormal, Color bgHover, Color colorTexto) {
@@ -64,7 +67,7 @@ public class SistemaCondominio {
             this.bgNormal = bgNormal;
             this.bgHover = bgHover;
             this.colorTexto = colorTexto;
-            this.colorBorde = bgNormal;
+            this.colorBorde = null;
             init();
         }
 
@@ -75,7 +78,7 @@ public class SistemaCondominio {
             setForeground(colorTexto);
             setFont(FONT_REGULAR);
             setCursor(new Cursor(Cursor.HAND_CURSOR));
-            setMargin(new Insets(6, 12, 6, 12));
+            setMargin(new Insets(5, 12, 5, 12));
 
             addMouseListener(new MouseAdapter() {
                 @Override
@@ -93,7 +96,7 @@ public class SistemaCondominio {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             g2.setColor(hover ? bgHover : bgNormal);
-            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, radio, radio));
+            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), radio, radio));
 
             if (colorBorde != null) {
                 g2.setColor(colorBorde);
@@ -105,9 +108,9 @@ public class SistemaCondominio {
         }
     }
 
-    /** Contenedor Redondeado Limpio */
+    /** Panel Tarjeta */
     public static class PanelMinimalista extends JPanel {
-        private int radio = 10;
+        private int radio = 8;
         private Color fondo = COLOR_SURFACE;
         private Color borde = COLOR_BORDER;
 
@@ -125,7 +128,7 @@ public class SistemaCondominio {
 
             if (fondo != null) {
                 g2.setColor(fondo);
-                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, radio, radio));
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), radio, radio));
             }
 
             if (borde != null) {
@@ -138,7 +141,7 @@ public class SistemaCondominio {
         }
     }
 
-    // --- 1. MODELO Y PATRÓN OBSERVER ---
+    // --- MODELO Y PATRÓN OBSERVER ---
     public enum Estado { PENDIENTE, EN_CURSO, COMPLETADO, FALLIDO }
 
     public interface ObservadorIncidencias {
@@ -197,7 +200,7 @@ public class SistemaCondominio {
         public IncidenciaExterna(String n, String tr, String d, String p, String desc) { super(n, tr, d, p, desc); }
     }
 
-    // --- 2. CONTROLADOR ---
+    // --- CONTROLADOR ---
     public static class ControladorSistema {
         private List<Incidencia> listaIncidencias = new ArrayList<>();
         private List<UsuarioAdmin> listaAdministradores = new ArrayList<>();
@@ -284,14 +287,7 @@ public class SistemaCondominio {
         public List<Incidencia> getIncidencias() { return listaIncidencias; }
     }
 
-    // --- 3. COMPONENTE VISUAL DE FONDO NEUTRO ---
-    static class PanelFondo extends JPanel {
-        public PanelFondo(String rutaImagen) {
-            setBackground(COLOR_BG);
-        }
-    }
-
-    // --- 4. VISTAS (INTERFAZ GRÁFICA) ---
+    // --- MAIN ---
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -304,18 +300,20 @@ public class SistemaCondominio {
         });
     }
 
+    // --- VISTAS ---
+
     static class VentanaLoginAdmin extends JFrame {
         public VentanaLoginAdmin(ControladorSistema ctrl) {
-            setTitle("Login");
-            setSize(360, 290);
+            setTitle("Administración");
+            setSize(360, 300);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setLocationRelativeTo(null);
             getContentPane().setBackground(COLOR_BG);
             setLayout(new BorderLayout());
 
-            PanelMinimalista cardPanel = new PanelMinimalista(12, COLOR_SURFACE, COLOR_BORDER);
+            PanelMinimalista cardPanel = new PanelMinimalista(10, COLOR_SURFACE, COLOR_BORDER);
             cardPanel.setLayout(new BoxLayout(cardPanel, BoxLayout.Y_AXIS));
-            cardPanel.setBorder(new EmptyBorder(24, 24, 24, 24));
+            cardPanel.setBorder(new EmptyBorder(22, 24, 22, 24));
 
             JLabel lblTitulo = new JLabel("Administración");
             lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -327,7 +325,7 @@ public class SistemaCondominio {
             txtUser.setFont(FONT_REGULAR);
             txtPass.setFont(FONT_REGULAR);
 
-            JPanel form = new JPanel(new GridLayout(2, 2, 8, 12));
+            JPanel form = new JPanel(new GridLayout(2, 2, 8, 10));
             form.setOpaque(false);
             form.setBorder(new EmptyBorder(16, 0, 16, 0));
             
@@ -387,7 +385,7 @@ public class SistemaCondominio {
             cardPanel.add(lblTitulo);
             cardPanel.add(form);
             cardPanel.add(btnIngresar);
-            cardPanel.add(Box.createVerticalStrut(12));
+            cardPanel.add(Box.createVerticalStrut(8));
             cardPanel.add(pnlSubOpciones);
 
             JPanel root = new JPanel(new BorderLayout());
@@ -402,14 +400,14 @@ public class SistemaCondominio {
     static class AppLoginResidente extends JFrame {
         public AppLoginResidente(ControladorSistema ctrl) {
             setTitle("App Residente");
-            setSize(360, 600);
+            setSize(350, 480);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setLocation(50, 50); 
             getContentPane().setBackground(COLOR_BG);
 
-            PanelMinimalista container = new PanelMinimalista(12, COLOR_SURFACE, COLOR_BORDER);
+            PanelMinimalista container = new PanelMinimalista(10, COLOR_SURFACE, COLOR_BORDER);
             container.setLayout(new GridBagLayout());
-            container.setBorder(new EmptyBorder(24, 24, 24, 24));
+            container.setBorder(new EmptyBorder(20, 20, 20, 20));
 
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(6, 6, 6, 6);
@@ -452,7 +450,7 @@ public class SistemaCondominio {
 
         private void ingresar(ControladorSistema ctrl, String nombre, String tipo) {
             if (nombre.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Ingrese su nombre.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Ingrese su nombre para continuar.", "Atención", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             new AppReporteResidente(ctrl, nombre, tipo, this).setVisible(true);
@@ -475,20 +473,19 @@ public class SistemaCondominio {
         };
 
         public AppReporteResidente(ControladorSistema ctrl, String nombre, String tipo, AppLoginResidente ventanaLogin) {
-            setTitle("Reporte");
-            setSize(360, 600); 
+            setTitle("Reportar Incidencia");
+            setSize(350, 550); 
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setLocation(50, 50);
             getContentPane().setBackground(COLOR_BG);
 
-            JPanel panelPrincipal = new JPanel();
+            PanelMinimalista panelPrincipal = new PanelMinimalista(10, COLOR_SURFACE, COLOR_BORDER);
             panelPrincipal.setLayout(new BoxLayout(panelPrincipal, BoxLayout.Y_AXIS));
-            panelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-            panelPrincipal.setBackground(COLOR_SURFACE);
+            panelPrincipal.setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
 
             JLabel lblUser = new JLabel(nombre + " • " + tipo);
             lblUser.setFont(FONT_MEDIUM);
-            lblUser.setForeground(COLOR_BTN_PRIMARY);
+            lblUser.setForeground(COLOR_TEXT_PRIMARY);
 
             JPanel panelDpto = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 4));
             panelDpto.setOpaque(false);
@@ -533,14 +530,16 @@ public class SistemaCondominio {
             panelPrincipal.add(Box.createVerticalStrut(12));
             
             JLabel lblTipo = new JLabel("Tipo de Incidencia"); lblTipo.setFont(FONT_REGULAR);
+            lblTipo.setForeground(COLOR_TEXT_MUTED);
             panelPrincipal.add(lblTipo);
             panelPrincipal.add(cbxIncidencia);
             panelPrincipal.add(Box.createVerticalStrut(12));
             
             JLabel lblDesc = new JLabel("Descripción"); lblDesc.setFont(FONT_REGULAR);
+            lblDesc.setForeground(COLOR_TEXT_MUTED);
             panelPrincipal.add(lblDesc);
             panelPrincipal.add(txtDesc);
-            panelPrincipal.add(Box.createVerticalStrut(24));
+            panelPrincipal.add(Box.createVerticalStrut(18));
             
             panelPrincipal.add(btnEnviar);
             panelPrincipal.add(Box.createVerticalStrut(6));
@@ -548,9 +547,11 @@ public class SistemaCondominio {
             panelPrincipal.add(Box.createVerticalStrut(6));
             panelPrincipal.add(btnVolver);
 
-            JScrollPane scrollResidente = new JScrollPane(panelPrincipal);
-            scrollResidente.setBorder(null);
-            add(scrollResidente);
+            JPanel root = new JPanel(new BorderLayout());
+            root.setOpaque(false);
+            root.setBorder(new EmptyBorder(16, 16, 16, 16));
+            root.add(panelPrincipal, BorderLayout.CENTER);
+            add(root);
         }
     }
 
@@ -579,18 +580,19 @@ public class SistemaCondominio {
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setLocationRelativeTo(null);
 
-            PanelFondo fondoTablero = new PanelFondo("ui.jpeg");
-            fondoTablero.setLayout(new BorderLayout());
+            JPanel fondoTablero = new JPanel(new BorderLayout());
+            fondoTablero.setBackground(COLOR_BG);
 
-            JPanel panelTitulos = new JPanel(new GridLayout(1, 3, 16, 0));
+            // Cabeceras sobrias en pasteles mate
+            JPanel panelTitulos = new JPanel(new GridLayout(1, 3, 14, 0));
             panelTitulos.setOpaque(false);
-            panelTitulos.setBorder(new EmptyBorder(16, 16, 8, 16));
+            panelTitulos.setBorder(new EmptyBorder(14, 16, 8, 16));
             panelTitulos.add(crearHeaderColumna("Pendientes", BG_PENDIENTE, FG_PENDIENTE));
             panelTitulos.add(crearHeaderColumna("En curso", BG_EN_CURSO, FG_EN_CURSO));
             panelTitulos.add(crearHeaderColumna("Completados", BG_COMPLETADO, FG_COMPLETADO));
             fondoTablero.add(panelTitulos, BorderLayout.NORTH);
 
-            JPanel panelColumnas = new JPanel(new GridLayout(1, 3, 16, 0));
+            JPanel panelColumnas = new JPanel(new GridLayout(1, 3, 14, 0));
             panelColumnas.setOpaque(false);
             panelColumnas.setBorder(new EmptyBorder(0, 16, 12, 16));
 
@@ -606,22 +608,24 @@ public class SistemaCondominio {
             JPanel panelInferior = new JPanel(new BorderLayout());
             panelInferior.setBackground(COLOR_BG);
             
+            // Consola estilo Notepad / Panel Mate
             consola = new JTextArea(6, 0);
             consola.setEditable(false);
             consola.setFont(new Font("Consolas", Font.PLAIN, 11));
-            consola.setBackground(new Color(15, 23, 42));
-            consola.setForeground(new Color(52, 211, 153)); // Verde menta para logs
+            consola.setBackground(new Color(40, 40, 42));             // Gris muy oscuro mate
+            consola.setForeground(new Color(209, 209, 214));          // Texto gris suave neutro
             consola.setCaretColor(Color.WHITE);
+            consola.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
             consola.setText("> Sistema Kanban Iniciado.\n> Seleccione una tarjeta para gestionar...\n");
             
             JPanel panelBotonesAcciones = new JPanel(new GridLayout(0, 4, 6, 6));
             panelBotonesAcciones.setOpaque(false);
-            panelBotonesAcciones.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+            panelBotonesAcciones.setBorder(BorderFactory.createEmptyBorder(10, 12, 8, 12));
             
             for (String accion : accionesPosibles) {
                 BotonMinimalista btn = new BotonMinimalista(accion);
                 btn.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-                btn.setRadio(6);
+                btn.setRadio(5);
                 btn.addActionListener(e -> ejecutarAccionBoton(accion));
                 panelBotonesAcciones.add(btn);
             }
@@ -629,7 +633,7 @@ public class SistemaCondominio {
             JPanel panelControlesExtra = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
             panelControlesExtra.setOpaque(false);
 
-            BotonMinimalista btnLimpiar = new BotonMinimalista("Eliminar", COLOR_SURFACE, new Color(254, 226, 226), new Color(220, 38, 38));
+            BotonMinimalista btnLimpiar = new BotonMinimalista("Eliminar Tarjeta", new Color(242, 222, 222), new Color(230, 200, 200), new Color(150, 40, 40));
             BotonMinimalista btnCerrar = new BotonMinimalista("Cerrar Sesión");
             
             btnLimpiar.addActionListener(e -> {
@@ -662,8 +666,8 @@ public class SistemaCondominio {
         }
 
         private JPanel crearHeaderColumna(String texto, Color bg, Color fg) {
-            PanelMinimalista panel = new PanelMinimalista(8, bg, null);
-            panel.setLayout(new FlowLayout(FlowLayout.LEFT, 12, 6));
+            PanelMinimalista panel = new PanelMinimalista(6, bg, null);
+            panel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 5));
             JLabel lbl = new JLabel(texto);
             lbl.setFont(FONT_MEDIUM);
             lbl.setForeground(fg); 
@@ -687,14 +691,14 @@ public class SistemaCondominio {
 
         private Border obtenerBordeNormal() {
             return BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(0, 0, 8, 0),
+                BorderFactory.createEmptyBorder(0, 0, 6, 0),
                 BorderFactory.createLineBorder(COLOR_BORDER, 1, true)
             );
         }
 
         private Border obtenerBordeResaltado() {
             return BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(0, 0, 8, 0),
+                BorderFactory.createEmptyBorder(0, 0, 6, 0),
                 BorderFactory.createLineBorder(COLOR_BORDER_ACTIVE, 2, true)
             );
         }
@@ -717,15 +721,15 @@ public class SistemaCondominio {
         private JPanel crearTarjetaVisual(Incidencia inc) {
             PanelMinimalista card = new PanelMinimalista(8, COLOR_SURFACE, null);
             card.setLayout(new BorderLayout(6, 6));
-            card.setMaximumSize(new Dimension(350, 90));
-            card.setBorder(BorderFactory.createCompoundBorder(obtenerBordeNormal(), new EmptyBorder(10, 12, 10, 12)));
+            card.setMaximumSize(new Dimension(350, 85));
+            card.setBorder(BorderFactory.createCompoundBorder(obtenerBordeNormal(), new EmptyBorder(8, 10, 8, 10)));
             card.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            // Badge de Departamento con acento en Indigo
+            // Badge sutil de departamento
             JLabel lblTag = new JLabel("Dpto " + inc.getDepartamento());
             lblTag.setFont(new Font("Segoe UI", Font.BOLD, 10));
-            lblTag.setForeground(new Color(67, 56, 202));
-            lblTag.setBackground(new Color(238, 242, 255));
+            lblTag.setForeground(COLOR_TEXT_PRIMARY);
+            lblTag.setBackground(COLOR_BTN_SECONDARY_BG);
             lblTag.setOpaque(true);
             lblTag.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
 
@@ -822,7 +826,7 @@ public class SistemaCondominio {
                     "Evaluando la situación reportada...", 
                     "Derivando al especialista / equipo de mantenimiento...", 
                     "Equipo en el lugar analizando el desperfecto...", 
-                    "Ejecutando reparaciones técnicas necesarias...", 
+                    "Ejecutando reparaciones necesarias...", 
                     "Realizando pruebas de funcionamiento..."
                 };
             }
